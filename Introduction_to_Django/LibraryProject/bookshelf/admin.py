@@ -3,10 +3,10 @@ from .models import Book
 
 class BookAdmin(admin.ModelAdmin):
     # Columns to show in the list view
-    list_display = ('title', 'author', 'published_year')
+    list_display = ('title', 'author', 'publication_year')
 
     # Add filters on the right-hand side
-    list_filter = ('author', 'published_year')
+    list_filter = ('author', 'publication_year')
 
     # Add a search box (can search by title or author)
     search_fields = ('title', 'author')
