@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Relationship App</title>
+</head>
+<body>
+    <h1>Welcome to the Relationship App</h1>
+
+    <h2>Navigation</h2>
+    <ul>
+        <li><a href="{% url 'list_books' %}">📚 View Books</a></li>
+        <li><a href="{% url 'library_detail' pk=1 %}">🏛 Library Details (example ID=1)</a></li>
+        <li><a href="{% url 'admin_view' %}">⚙️ Admin View</a></li>
+        <li><a href="{% url 'librarian_view' %}">📖 Librarian View</a></li>
+        <li><a href="{% url 'member_view' %}">👤 Member View</a></li>
+        <li><a href="{% url 'login' %}">🔑 Login</a></li>
+        <li><a href="{% url 'logout' %}">🚪 Logout</a></li>
+        <li><a href="{% url 'register' %}">📝 Register</a></li>
+    </ul>
+</body>
+</html>

@@ -15,6 +15,9 @@ from django import forms
 
 
 # Function-based view to list all books
+def index(request):
+    return render(request, "relationship_app/index.html")
+
 def list_books(request):
     books = Book.objects.all()
     return render(request, "relationship_app/list_books.html", {"books": books})
