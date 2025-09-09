@@ -20,10 +20,10 @@ def run_queries():
     except Library.DoesNotExist:
         print(f"No library found with name {library_name}")
 
-    # 3. Retrieve the librarian for a library
+    # 3. Retrieve the librarian for a library (explicit query)
     try:
         library = Library.objects.get(name=library_name)
-        librarian = library.librarian  # thanks to OneToOneField
+        librarian = Librarian.objects.get(library=library)  # ✅ explicit query
         print(f"Librarian for {library_name}: {librarian.name}")
     except Library.DoesNotExist:
         print(f"No library found with name {library_name}")
@@ -31,5 +31,5 @@ def run_queries():
         print(f"No librarian assigned to {library_name}")
 
 
-# Run immediately when script is piped into shell
 run_queries()
+
