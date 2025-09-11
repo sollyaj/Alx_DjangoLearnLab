@@ -1,16 +1,27 @@
 from django.contrib import admin
-from .models import Book
+from .models import Author, Book, Library, Librarian
 
+
+@admin.register(Author)
+class AuthorAdmin(admin.ModelAdmin):
+    list_display = ("name",)
+
+
+@admin.register(Book)
 class BookAdmin(admin.ModelAdmin):
-    # Columns to show in the list view
-    list_display = ('title', 'author', 'publication_year')
+    list_display = ("title", "author", "published_year")
+    list_filter = ("published_year", "author")
+    search_fields = ("title", "author__name")
 
-    # Add filters on the right-hand side
-    list_filter = ('author', 'publication_year')
 
-    # Add a search box (can search by title or author)
-    search_fields = ('title', 'author')
+@admin.register(Library)
+class LibraryAdmin(admin.ModelAdmin):
+    list_display = ("name",)
+    filter_horizontal = ("books",)
 
-# Register the Book model with these custom settings
-admin.site.register(Book, BookAdmin)
+
+@admin.register(Librarian)
+class LibrarianAdmin(admin.ModelAdmin):
+    list_display = ("name", "library")
+
 
