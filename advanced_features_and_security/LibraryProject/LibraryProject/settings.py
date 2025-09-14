@@ -23,9 +23,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure--ni(3^^n=1+@kcxvrb%k&(c34uhwo9cl_-t4bzaob&(u+q(=d+'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", "yourdomain.com"]
 
 
 # Application definition
@@ -51,6 +51,26 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# ✅ Browser-side protections
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = "DENY"   # prevents clickjacking
+
+# ✅ Cookie security
+CSRF_COOKIE_SECURE = True   # only transmit CSRF cookie over HTTPS
+SESSION_COOKIE_SECURE = True  # only transmit session cookie over HTTPS
+
+# ✅ HSTS (HTTP Strict Transport Security) - only if HTTPS is enabled
+SECURE_HSTS_SECONDS = 31536000   # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+
+# ✅ Content Security Policy (requires django-csp package if you use it)
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_STYLE_SRC = ("'self'", "https://fonts.googleapis.com")
+CSP_SCRIPT_SRC = ("'self'",)
+CSP_IMG_SRC = ("'self'", "data:")
 
 ROOT_URLCONF = 'LibraryProject.urls'
 
