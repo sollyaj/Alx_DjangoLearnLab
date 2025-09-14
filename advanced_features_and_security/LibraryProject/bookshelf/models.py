@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings  
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.contrib.auth.models import AbstractUser
 
 
 # ------------------------------
@@ -54,8 +55,11 @@ class Librarian(models.Model):
     def __str__(self):
         return self.name
 
+class CustomUser(AbstractUser):
+    date_of_birth = models.DateField(null=True, blank=True)
+    profile_photo = models.ImageField(upload_to="profile_photos/", null=True, blank=True)
 
-# ------------------------------
+
 # UserProfile Model (role-based access)
 # ------------------------------
 class UserProfile(models.Model):
