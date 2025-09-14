@@ -1,3 +1,4 @@
+from .forms import ExampleForm, BookForm
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 from django.contrib.auth.decorators import permission_required
