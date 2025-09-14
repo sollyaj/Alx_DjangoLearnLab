@@ -5,9 +5,10 @@ from .models import Book
 
 
 @permission_required("bookshelf.can_view", raise_exception=True)
-def view_books(request):
+def book_list(request):
+    """List all books (requires can_view permission)."""
     books = Book.objects.all()
-    return render(request, "bookshelf/view_books.html", {"books": books})
+    return render(request, "bookshelf/book_list.html", {"books": books})
 
 
 @permission_required("bookshelf.can_create", raise_exception=True)
@@ -25,4 +26,5 @@ def edit_book(request, book_id):
 def delete_book(request, book_id):
     book = get_object_or_404(Book, id=book_id)
     return HttpResponse(f"Deleting {book.title} (protected by can_delete).")
+
 
