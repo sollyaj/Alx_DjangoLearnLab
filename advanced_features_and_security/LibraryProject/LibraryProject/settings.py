@@ -61,6 +61,9 @@ X_FRAME_OPTIONS = "DENY"   # prevents clickjacking
 CSRF_COOKIE_SECURE = True   # only transmit CSRF cookie over HTTPS
 SESSION_COOKIE_SECURE = True  # only transmit session cookie over HTTPS
 
+# Redirect all HTTP traffic to HTTPS
+SECURE_SSL_REDIRECT = True  
+
 # ✅ HSTS (HTTP Strict Transport Security) - only if HTTPS is enabled
 SECURE_HSTS_SECONDS = 31536000   # 1 year
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
@@ -147,6 +150,12 @@ LOGIN_REDIRECT_URL = "/relationship_app/books/"   # change if needed
 LOGOUT_REDIRECT_URL = "/relationship_app/login/"  # after logout
 AUTH_USER_MODEL = 'relationship_app.CustomUser'
 AUTH_USER_MODEL = "bookshelf.CustomUser"
+
+# Security Hardening Summary:
+#- Enforced HTTPS (SECURE_SSL_REDIRECT, HSTS headers).
+#- Secured cookies (SESSION_COOKIE_SECURE, CSRF_COOKIE_SECURE).
+#- Implemented security headers (X_FRAME_OPTIONS, SECURE_CONTENT_TYPE_NOSNIFF, SECURE_BROWSER_XSS_FILTER).
+#- Deployment instructions include setting up Nginx with SSL/TLS certificates.
 
 
 
