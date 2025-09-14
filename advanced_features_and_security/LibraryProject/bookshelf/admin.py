@@ -1,5 +1,22 @@
 from django.contrib import admin
-from .models import Author, Book, Library, Librarian
+from django.contrib.auth.admin import UserAdmin
+from .models import CustomUser, Author, Book, Library, Librarian
+
+
+# ✅ CustomUser Admin
+class CustomUserAdmin(UserAdmin):
+    model = CustomUser
+    list_display = ("username", "email", "date_of_birth", "is_staff", "is_superuser")
+    fieldsets = UserAdmin.fieldsets + (
+        (None, {"fields": ("date_of_birth", "profile_photo")}),
+    )
+    add_fieldsets = UserAdmin.add_fieldsets + (
+        (None, {"fields": ("date_of_birth", "profile_photo")}),
+    )
+
+
+# ✅ Register everything
+admin.site.register(CustomUser, CustomUserAdmin)
 
 
 @admin.register(Author)
@@ -23,5 +40,6 @@ class LibraryAdmin(admin.ModelAdmin):
 @admin.register(Librarian)
 class LibrarianAdmin(admin.ModelAdmin):
     list_display = ("name", "library")
+
 
 
