@@ -35,3 +35,20 @@ class Post(models.Model):
     def get_absolute_url(self):
         # used by DetailView/CreateView/UpdateView redirect
         return reverse('blog:post-detail', kwargs={'pk': self.pk})
+    
+class Comment(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['created_at']  # oldest first; change to '-created_at' if you prefer newest first
+
+    def __str__(self):
+        return f'Comment by {self.author.username} on {self.post.title}'
+
+    def get_absolute_url(self):
+        # after editing/deleting a comment we typically return to the post detail page
+        return reverse('blog:post-detail', kwargs={'pk': self.post.pk})

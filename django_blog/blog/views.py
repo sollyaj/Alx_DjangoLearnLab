@@ -8,6 +8,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from .models import Post
 from .forms import UserUpdateForm, ProfileUpdateForm
+from .models import Post, Comment
+from .forms import PostForm, CommentForm
+
 
 # Home page
 def home(request):
@@ -24,6 +27,62 @@ class PostListView(ListView):
 class PostDetailView(DetailView):
     model = Post
     template_name = 'blog/post_detail.html'
+    context_object_name = 'post'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Comments for this post
+        context['comments'] = self.object.comments.select_related('author').all()
+        # Comment form for authenticated users
+        context['comment_form'] = CommentForm()
+        return context
+    
+class CommentCreateView(LoginRequiredMixin, CreateView):
+    model = Comment
+    form_class = CommentForm
+    # we don't need a template for create because form is on post_detail page,
+    # but Django CreateView expects one if used directly. We'll override post(),
+    # so template_name isn't required.
+
+    def post(self, request, *args, **kwargs):
+        post_pk = self.kwargs.get('post_pk')
+        post = get_object_or_404(Post, pk=post_pk)
+        form = self.form_class(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.post = post
+            comment.author = request.user
+            comment.save()
+            messages.success(request, "Your comment was added.")
+        else:
+            messages.error(request, "There was an error with your comment.")
+        return redirect('blog:post-detail', pk=post_pk)
+
+
+class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Comment
+    form_class = CommentForm
+    template_name = 'blog/comment_form.html'
+
+    def form_valid(self, form):
+        messages.success(self.request, "Comment updated.")
+        return super().form_valid(form)
+
+    def test_func(self):
+        comment = self.get_object()
+        return self.request.user == comment.author
+
+
+class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Comment
+    template_name = 'blog/comment_confirm_delete.html'
+
+    def get_success_url(self):
+        return reverse_lazy('blog:post-detail', kwargs={'pk': self.object.post.pk})
+
+    def test_func(self):
+        comment = self.get_object()
+        return self.request.user == comment.author
 
 class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
