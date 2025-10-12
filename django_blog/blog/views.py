@@ -4,7 +4,56 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 from .forms import UserUpdateForm, ProfileUpdateForm
+from django.urls import reverse_lazy
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from .models import Post
+from .forms import PostForm
 
+# List view (public)
+class PostListView(ListView):
+    model = Post
+    template_name = 'blog/post_list.html'   # override if you prefer
+    context_object_name = 'posts'
+    paginate_by = 10
+    ordering = ['-published_date']
+
+# Detail view (public)
+class PostDetailView(DetailView):
+    model = Post
+    template_name = 'blog/post_detail.html'
+    context_object_name = 'post'
+
+# Create view (authenticated users only)
+class PostCreateView(LoginRequiredMixin, CreateView):
+    model = Post
+    form_class = PostForm
+    template_name = 'blog/post_form.html'
+
+    def form_valid(self, form):
+        # set the logged-in user as the author
+        form.instance.author = self.request.user
+        return super().form_valid(form)
+
+# Update view (only author can edit)
+class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Post
+    form_class = PostForm
+    template_name = 'blog/post_form.html'
+
+    def test_func(self):
+        post = self.get_object()
+        return self.request.user == post.author
+
+# Delete view (only author can delete)
+class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Post
+    template_name = 'blog/post_confirm_delete.html'
+    success_url = reverse_lazy('blog:post-list')
+
+    def test_func(self):
+        post = self.get_object()
+        return self.request.user == post.author
 
 def home(request):
     return render(request, 'blog/home.html')
