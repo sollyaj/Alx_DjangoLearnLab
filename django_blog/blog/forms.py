@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 from .models import Profile
 from .models import Post, Comment, Tag
+from taggit.forms import TagWidget
 
 class UserUpdateForm(forms.ModelForm):
     class Meta:
@@ -14,12 +15,12 @@ class ProfileUpdateForm(forms.ModelForm):
         fields = ['avatar', 'bio']
 
 class PostForm(forms.ModelForm):
-    # visible field to enter tags as comma-separated string
-    tag_field = forms.CharField(
-        required=False,
-        label='Tags (comma-separated)',
-        widget=forms.TextInput(attrs={'placeholder': 'e.g. django, python, tips'})
-    )
+    class Meta:
+        model = Post
+        fields = ['title', 'content', 'tags']  # ✅ include tags
+        widgets = {
+            'tags': TagWidget(attrs={'placeholder': 'Add tags separated by commas'}),  # ✅ correct usage
+        }
 
     class Meta:
         model = Post
