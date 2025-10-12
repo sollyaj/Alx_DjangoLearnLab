@@ -10,6 +10,7 @@ from .forms import UserUpdateForm, ProfileUpdateForm
 from .models import Post, Comment, Tag
 from django.db.models import Q
 from .forms import PostForm, CommentForm
+from django.views.generic import ListView
 
 
 # Home page
@@ -22,18 +23,25 @@ def posts_by_tag(request, tag_name):
     context = {'tag': tag, 'posts': posts}
     return render(request, 'blog/posts_by_tag.html', context)
 
-# Search view
+class PostByTagListView(ListView):
+    model = Post
+    template_name = 'blog/post_list.html'
+    context_object_name = 'posts'
+
+    def get_queryset(self):
+        tag_slug = self.kwargs.get('tag_slug')
+        return Post.objects.filter(tags__slug=tag_slug).distinct()
+
 def search(request):
-    q = request.GET.get('q', '').strip()
-    posts = Post.objects.none()
-    if q:
-        posts = Post.objects.filter(
-            Q(title__icontains=q) |
-            Q(content__icontains=q) |
-            Q(tags__name__icontains=q)
-        ).distinct().order_by('-published_date')
-    context = {'query': q, 'posts': posts}
-    return render(request, 'blog/search_results.html', context)
+    query = request.GET.get('q')
+    posts = Post.objects.all()
+    if query:
+        posts = posts.filter(
+            Q(title__icontains=query) |
+            Q(content__icontains=query) |
+            Q(tags__name__icontains=query)
+        ).distinct()
+    return render(request, 'blog/post_list.html', {'posts': posts, 'query': query})
 
 # ✅ CRUD VIEWS
 
