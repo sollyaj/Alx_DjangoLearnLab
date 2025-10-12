@@ -6,15 +6,34 @@ from django.contrib.auth import login
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
-from .models import Post
 from .forms import UserUpdateForm, ProfileUpdateForm
-from .models import Post, Comment
+from .models import Post, Comment, Tag
+from django.db.models import Q
 from .forms import PostForm, CommentForm
 
 
 # Home page
 def home(request):
     return render(request, 'blog/home.html')
+
+def posts_by_tag(request, tag_name):
+    tag = get_object_or_404(Tag, name=tag_name)
+    posts = tag.posts.order_by('-published_date').all()
+    context = {'tag': tag, 'posts': posts}
+    return render(request, 'blog/posts_by_tag.html', context)
+
+# Search view
+def search(request):
+    q = request.GET.get('q', '').strip()
+    posts = Post.objects.none()
+    if q:
+        posts = Post.objects.filter(
+            Q(title__icontains=q) |
+            Q(content__icontains=q) |
+            Q(tags__name__icontains=q)
+        ).distinct().order_by('-published_date')
+    context = {'query': q, 'posts': posts}
+    return render(request, 'blog/search_results.html', context)
 
 # ✅ CRUD VIEWS
 
@@ -86,22 +105,36 @@ class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
 class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
-    fields = ['title', 'content']
+    form_class = PostForm
     template_name = 'blog/post_form.html'
 
     def form_valid(self, form):
-        form.instance.author = self.request.user
-        messages.success(self.request, "Post created successfully!")
+        # ensure author is set and tags saved
+        post = form.save(commit=False)
+        post.author = self.request.user
+        post.save()
+        # if PostForm saved with commit=False earlier, use form.save with commit=True to set tags
+        # call form.save(commit=True) to set tags using our overridden save
+        form.instance = post
+        form.save(commit=True)
         return super().form_valid(form)
+
 
 class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Post
-    fields = ['title', 'content']
+    form_class = PostForm
     template_name = 'blog/post_form.html'
 
+    def get_form(self, *args, **kwargs):
+        form = super().get_form(*args, **kwargs)
+        return form
+
     def form_valid(self, form):
-        form.instance.author = self.request.user
-        messages.success(self.request, "Post updated successfully!")
+        # Save post and tags
+        post = form.save(commit=False)
+        post.save()
+        form.instance = post
+        form.save(commit=True)
         return super().form_valid(form)
 
     def test_func(self):

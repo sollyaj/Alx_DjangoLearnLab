@@ -23,17 +23,32 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
         Profile.objects.create(user=instance)
     instance.profile.save()
 
+class Tag(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+
+    class Meta:
+        ordering = ['name']
+        verbose_name = 'Tag'
+        verbose_name_plural = 'Tags'
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse('blog:posts-by-tag', kwargs={'tag_name': self.name})
+
+
 class Post(models.Model):
     title = models.CharField(max_length=200)
     content = models.TextField()
     published_date = models.DateTimeField(auto_now_add=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
+    tags = models.ManyToManyField(Tag, blank=True, related_name='posts')  # new field
 
     def __str__(self):
         return self.title
-    
+
     def get_absolute_url(self):
-        # used by DetailView/CreateView/UpdateView redirect
         return reverse('blog:post-detail', kwargs={'pk': self.pk})
     
 class Comment(models.Model):

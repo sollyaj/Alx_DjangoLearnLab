@@ -23,6 +23,10 @@
                 {% endif %}
             </ul>
         </nav>
+        <form action="{% url 'blog:search' %}" method="get" style="display:inline;">
+            <input type="text" name="q" placeholder="Search posts..." value="{{ request.GET.q|default:'' }}">
+            <button type="submit">Search</button>
+       </form>
     </header>
 
     {% if messages %}

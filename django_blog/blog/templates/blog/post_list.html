@@ -1,34 +1,62 @@
 {% extends "blog/base.html" %}
-{% block title %}All Posts{% endblock %}
+{% block title %}{{ post.title }}{% endblock %}
 {% block content %}
-<h1>Blog Posts</h1>
-
-{% if user.is_authenticated %}
-  <p><a href="{% url 'blog:post-create' %}">Create new post</a></p>
-{% endif %}
-
-{% for post in posts %}
-  <article>
-    <h2><a href="{% url 'blog:post-detail' post.pk %}">{{ post.title }}</a></h2>
-    <p class="meta">By {{ post.author.username }} — {{ post.published_date|date:"M d, Y H:i" }}</p>
-    <p>{{ post.content|truncatechars:200 }}</p>
-    <p><a href="{% url 'blog:post-detail' post.pk %}">Read more</a></p>
-  </article>
-  <hr>
-{% empty %}
-  <p>No posts yet.</p>
-{% endfor %}
-
-{% if is_paginated %}
-  <div class="pagination">
-    {% if page_obj.has_previous %}
-      <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
-    {% endif %}
-    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-    {% if page_obj.has_next %}
-      <a href="?page={{ page_obj.next_page_number }}">Next</a>
-    {% endif %}
+<article>
+  <h1>{{ post.title }}</h1>
+  <p class="meta">
+    By {{ post.author.username }} — {{ post.published_date|date:"M d, Y H:i" }}
+  </p>
+  <div class="post-content">
+    {{ post.content|linebreaks }}
   </div>
-{% endif %}
+
+  <!-- 🔖 Display Tags -->
+  {% if post.tags.all %}
+    <p class="tags">
+      Tags:
+      {% for tag in post.tags.all %}
+        <a href="{% url 'blog:posts-by-tag' tag.name %}" class="tag">{{ tag.name }}</a>{% if not forloop.last %}, {% endif %}
+      {% endfor %}
+    </p>
+  {% endif %}
+
+  {% if user == post.author %}
+    <p>
+      <a href="{% url 'blog:post-update' post.pk %}">Edit</a> |
+      <a href="{% url 'blog:post-delete' post.pk %}">Delete</a>
+    </p>
+  {% endif %}
+</article>
+
+<hr>
+
+<!-- 💬 Comments Section -->
+<section id="comments">
+  <h2>Comments ({{ post.comments.count }})</h2>
+
+  {% for comment in post.comments.all %}
+    <div class="comment">
+      <p><strong>{{ comment.author.username }}</strong> — {{ comment.created_at|date:"M d, Y H:i" }}</p>
+      <p>{{ comment.content|linebreaks }}</p>
+      {% if user == comment.author %}
+        <a href="{% url 'blog:comment-update' comment.pk %}">Edit</a>
+      {% endif %}
+    </div>
+  {% empty %}
+    <p>No comments yet.</p>
+  {% endfor %}
+
+  {% if user.is_authenticated %}
+    <h3>Add a comment</h3>
+    <form method="post" action="{% url 'blog:comment-create' post.pk %}">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit">Submit</button>
+    </form>
+  {% else %}
+    <p><a href="{% url 'blog:login' %}">Login</a> to add a comment.</p>
+  {% endif %}
+</section>
 {% endblock %}
+
 
